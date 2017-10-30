@@ -97,6 +97,19 @@
 (def total-traces (interop/ratom 0))
 (def traces (interop/ratom []))
 
+(defn open-debugger-window
+  "Copied from re-frisk.devtool/open-debugger-window"
+  []
+  (let [{:keys [ext_height ext_width]} (:prefs {})
+        w (js/window.open "" "Debugger" (str "width=" (or ext_width 800) ",height=" (or ext_height 800)
+                                             ",resizable=yes,scrollbars=yes,status=no,directories=no,toolbar=no,menubar=no"))
+        d (.-document w)]
+    (.open d)
+    (.write d "Hello world" #_html-doc)
+    (aset w "onload" #(js/console.log w d))
+    (.close d)))
+
+
 (defn log-trace? [trace]
   (let [rendering? (= (:op-type trace) :render)]
     (if-not rendering?
@@ -387,6 +400,9 @@
                                                   :on-click #(reset! selected-tab :traces)} "Traces"]
                                         [:button {:class    (str "tab button " (when (= @selected-tab :app-db) "active"))
                                                   :on-click #(reset! selected-tab :app-db)} "App DB"]
+                                        [:button {:class (str "tab button ")
+                                                  :on-click #(open-debugger-window)}
+                                         "External window"]
                                         #_[:button {:class    (str "tab button " (when (= @selected-tab :subvis) "active"))
                                                     :on-click #(reset! selected-tab :subvis)} "SubVis"]]]
                                       (case @selected-tab
